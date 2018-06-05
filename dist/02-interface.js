@@ -4,10 +4,6 @@
  * 可选属性
  *    属性非必需
  *    定义：在属性名后加一个 ?
- * 只读属性
- *    属性只有在对象创建时才能修改值
- *    定义：属性名前加 readonly
- * ReadonlyArray<T>: 不能更改的数组
  */
 function printLabel(labeledObj) {
     console.log(labeledObj.label);
@@ -21,3 +17,22 @@ printLabel(obj2);
 let p1 = { x: 10, y: 20 };
 //  p1.x = 30 // 报错
 p1.y = 30;
+function createSquare(squareConfig) {
+    let square = { color: 'black', area: 100 };
+    if (squareConfig.color) {
+        square.color = squareConfig.color;
+    }
+    if (squareConfig.width) {
+        square.area = squareConfig.width * squareConfig.width;
+    }
+    return square;
+}
+// const square = createSquare({yanse: 'lightblue', width: 12} as SquareConfig)
+const squareOption = { yanse: 'lightblue', width: 12 };
+const square = createSquare(squareOption);
+console.log(square);
+let mySearch;
+mySearch = function (source, search) {
+    let index = source.search(search);
+    return index > -1;
+};

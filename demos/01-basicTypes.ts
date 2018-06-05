@@ -73,7 +73,7 @@ any1.substring(0)
  */
 function fun(): void {
   console.log('no return function, type: void')
-  // return null
+  // return null // [ts] Type 'null' is not assignable to type 'void'
   // return
   // return undefined
 }
@@ -99,8 +99,6 @@ let uv: void = undefined
  * 返回 never 的函数必须存在无法达到的终点
  */
 function error(message: string): never {
-  /* let ne: never
-  return ne */
   throw new Error(message)
 }
 
