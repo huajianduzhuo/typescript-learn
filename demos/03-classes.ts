@@ -33,3 +33,15 @@ class Cat extends Animal {
 
 let dage: Animal = new Cat('大哥')
 dage.move(10)
+
+class Animal2 {
+  private name: string
+  public constructor(name: string) {
+    this.name = name
+  }
+  public move (discInMeters: number = 0) {
+    console.log(`${this.name} moved ${discInMeters}m!`)
+  }
+}
+
+// let xiaodi: Animal = new Animal2('小弟') // 报错：Type 'Animal2' is not assignable to type 'Animal'.

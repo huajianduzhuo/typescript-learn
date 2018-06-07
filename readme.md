@@ -365,8 +365,8 @@ mySearch = function(source: string, search: string): boolean {
 }
 ```
 
-* 函数的参数名不需要与接口里定义的名字相匹配
-* 函数的参数会逐个进行检查，要求对应位置上的参数类型是兼容的
+- 函数的参数名不需要与接口里定义的名字相匹配
+- 函数的参数会逐个进行检查，要求对应位置上的参数类型是兼容的
 
 ```javascript
 let mySearch2: SearchFunc
@@ -388,14 +388,14 @@ mySearch2 = function(src: string, sub: string): boolean {
 
 ```javascript
 interface StringArray {
-  [index: number]: string
+  [index: number]: string;
 }
 
 let arr: StringArray
 arr = ['卫庄', '盖聂']
 ```
 
-* 索引类型可以约束某一类型的属性的返回值类型。如下，因为 string 类型的属性设定了返回值类型为 string，所以属性 name 的返回值为 number 就会报错
+- 索引类型可以约束某一类型的属性的返回值类型。如下，因为 string 类型的属性设定了返回值类型为 string，所以属性 name 的返回值为 number 就会报错
 
 ```javascript
 interface StringArray {
@@ -405,7 +405,7 @@ interface StringArray {
 }
 ```
 
-* 将索引签名设置为只读，可以防止给索引赋值
+- 将索引签名设置为只读，可以防止给索引赋值
 
 ```javascript
 interface StringArray {
@@ -454,7 +454,7 @@ class Greeter {
   constructor(msg: string) {
     this.greeting = msg
   }
-  greet () {
+  greet() {
     return 'Hello, ' + this.greeting + '!'
   }
 }
@@ -462,7 +462,7 @@ class Greeter {
 
 ### 继承
 
-派生类：子类；  
+派生类：子类；
 
 基类：超类
 
@@ -478,7 +478,7 @@ class Animal {
   constructor(name: string) {
     this.name = name
   }
-  move (discInMeters: number = 0) {
+  move(discInMeters: number = 0) {
     console.log(`${this.name} moved ${discInMeters}m!`)
   }
 }
@@ -487,7 +487,7 @@ class Cat extends Animal {
   constructor(name: string) {
     super(name)
   }
-  move (discInMeters: number = 5) {
+  move(discInMeters: number = 5) {
     console.log('climb~~~')
     super.move(discInMeters)
   }
@@ -532,3 +532,27 @@ console.log(animal.name) // 报错：[ts] Property 'name' is private and only ac
 ```
 
 > 虽然访问 private 成员 typescript 检测会到错误，编译时报错，但是编译出的 javascript 文件仍能正常执行
+
+TypeScript 使用的是结构性类型系统。 当我们比较两种不同的类型时，并不在乎它们从何处而来，如果所有成员的类型都是兼容的，我们就认为它们的类型是兼容的。
+
+然而，当我们比较带有 private 或 protected 成员的类型的时候，情况就不同了。 如果其中一个类型里包含一个 private 成员，那么只有当另外一个类型中也存在这样一个 private 成员， 并且它们都是来自同一处声明时，我们才认为这两个类型是兼容的。 对于 protected 成员也使用这个规则。
+
+```javascript
+class Animal {
+  private name: string
+  public constructor(name: string) {
+    this.name = name
+  }
+}
+
+class Animal2 {
+  private name: string
+  public constructor(name: string) {
+    this.name = name
+  }
+}
+
+let xiaodi: Animal = new Animal2('小弟') // 报错：Type 'Animal2' is not assignable to type 'Animal'.
+```
+
+如上，因为含有私有属性 name，所以尽管两个类结构一模一样，但是仍然不能将 Animal2 的实例赋值给 Animal 类型的变量。如果将 name 的属性改为public，则不会报错。
