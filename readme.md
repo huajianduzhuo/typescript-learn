@@ -20,6 +20,8 @@
 
 在拥有 tsconfig.json 文件的项目根目录下直接执行 `tsc`，则会将项目目录下所有符合条件的 typescript 文件进行编译。
 
+执行 `tsc -w`，可以监视文件改动，文件保存后实时编译
+
 ### 配置
 
 配置介绍：[https://www.tslang.cn/docs/handbook/tsconfig-json.html](https://www.tslang.cn/docs/handbook/tsconfig-json.html)
@@ -555,4 +557,203 @@ class Animal2 {
 let xiaodi: Animal = new Animal2('小弟') // 报错：Type 'Animal2' is not assignable to type 'Animal'.
 ```
 
-如上，因为含有私有属性 name，所以尽管两个类结构一模一样，但是仍然不能将 Animal2 的实例赋值给 Animal 类型的变量。如果将 name 的属性改为public，则不会报错。
+如上，因为含有私有属性 name，所以尽管两个类结构一模一样，但是仍然不能将 Animal2 的实例赋值给 Animal 类型的变量。如果将 name 的属性改为 public，则不会报错。
+
+### 修饰符 protected
+
+protected 与 private 相似，不同的是，**protected 成员在派生类中仍然可以访问**。
+
+```javascript
+class Person {
+  protected name: string
+  constructor(name: string) {
+    this.name = name
+  }
+}
+class Employee extends Person {
+  private department: string
+  constructor(name: string, department: string) {
+    super(name)
+    this.department = department
+  }
+  introduce (): void {
+    console.log(`Hi, I'm ${this.name} and I work in ${this.department}!`)
+  }
+}
+let weizhuang = new Person('卫庄')
+// weizhuang.name // 报错：[ts] Property 'name' is protected and only accessible within class 'Person' and its subclasses.
+let genie = new Employee('盖聂', '秦国')
+genie.introduce()
+```
+
+构造函数也可以被标记成 protected。 这意味着这个类**不能在包含它的类外被实例化，但是能被继承**。
+
+```javascript
+class Person {
+  protected name: string
+  protected constructor(name: string) {
+    this.name = name
+  }
+}
+// let weizhuang = new Person('卫庄') // 报错：[ts] Constructor of class 'Person' is protected and only accessible within the class declaration.
+```
+
+### 修饰符 readonly
+
+readonly 将属性设置为只读，初始化后不可修改。
+
+初始化方式：
+
+- 声明时
+- 构造函数里
+
+```javascript
+class Dog {
+  readonly name: string
+  readonly numOfLegs: number = 4
+  constructor(name: string) {
+    this.name = name
+  }
+}
+let diandian = new Dog('点点')
+diandian.name = '贝贝' // 报错：[ts] Cannot assign to 'name' because it is a constant or a read-only property.
+```
+
+### 参数属性
+
+通过给构造函数添加一个限定符来声明参数属性，可以方便的在一个地方定义并初始化一个成员。
+
+简化了先声明一个属性，构造函数接收参数，然后将参数的值赋值给属性的步骤。
+
+public 类型属性，**public 不可省略**，否则便是构造函数接收一个参数，但是不会赋值给成员。
+
+```javascript
+class Rabbit {
+  constructor(public name: string) {
+  }
+}
+```
+
+如上编译结果为：
+
+```javascript
+class Rabbit {
+  constructor(name) {
+    this.name = name
+  }
+}
+```
+
+### 存取器
+
+通过 getters/setters 截取对对象成员的访问
+
+使用存取器需要注意：
+
+- 编译器设置为输出 ECMAScript 5 或更高，不支持降级到 ECMAScript 3
+- 只带有 get 不带有 set 的存取器自动被推断为 readonly
+
+```javascript
+let password = '1234'
+class User {
+  private _fullname: string
+  get fullname (): string {
+    return this._fullname
+  }
+  set fullname (name: string) {
+    if (password && password === '0000') {
+      this._fullname = name
+    } else {
+      console.log("Error: Unauthorized update of employee!")
+    }
+  }
+}
+let user1 = new User()
+user1.fullname = '岑岑' // Error: Unauthorized update of employee!
+```
+
+### 静态属性
+
+静态属性：存在于类本身上而不是类实例上的属性
+
+```javascript
+class Qin {
+  static king: string = '嬴政'
+  static say() {
+    console.log('赳赳老秦，共赴国难！')
+  }
+}
+Qin.say()
+```
+
+编译后：
+
+```javascript
+class Qin {
+  static say() {
+    console.log('赳赳老秦，共赴国难！')
+  }
+}
+Qin.king = '嬴政'
+Qin.say()
+```
+
+### 抽象类
+
+抽象类做为其它派生类的**基类**使用。 它们一般**不会直接被实例化**。
+
+- 不同于接口，抽象类**可以包含成员的实现细节**。
+
+- `abstract` 关键字是用于定义**抽象类**和在抽象类内部定义**抽象方法**。
+
+- 不可以创建抽象类的实例。
+
+- 创建派生类的实例，变量的类型可以是抽象类。但是这样如果派生类中包含抽象类中不存在的方法，则无法调用。
+
+抽象类中的抽象方法：
+
+- 与接口类似，都是只包含方法签名，不包含方法体
+- 必需包含 abstract 关键字，可以有访问修饰符
+- 必须在派生类中实现
+- 抽象方法只能存在于抽象类中
+
+```javascript
+abstract class Vehicle {
+  abstract move(): void
+  ring (sound: string): void {
+    console.log(`say ${sound}~~~`)
+  }
+}
+// let veh = new Vehicle() // 报错：[ts] Cannot create an instance of an abstract class.
+class Train extends Vehicle {
+  move(): void {
+    console.log('The train moved 10km!')
+  }
+  run(): void {
+    console.log('The train runned')
+  }
+}
+let car: Vehicle = new Train()
+car.move()
+car.ring('wu wu ')
+// car.run() // 报错：[ts] Property 'run' does not exist on type 'Vehicle'.
+```
+
+### 把类当接口使用
+
+类定义会创建两个东西：类的实例类型和一个构造函数。 因为类可以创建出类型，所以你能够在允许使用接口的地方使用类。
+
+> 接口可以继承类
+
+```javascript
+class Point {
+  x: number
+  y: number
+}
+
+interface Point3d extends Point {
+  z: number;
+}
+
+let point3d: Point3d = { x: 1, y: 2, z: 3 }
+```
