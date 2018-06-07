@@ -93,3 +93,23 @@ interface StringArray {
 let arr: StringArray
 arr = ['卫庄', '盖聂']
 // arr[2] = "鲨齿" // 报错：数字索引签名只读
+
+/** 
+ * 类类型
+ */
+interface ClockInterface {
+  currentTime: Date
+  setTime(d: Date)
+}
+class Clock implements ClockInterface {
+  currentTime: Date
+  setTime(d: Date) {
+    this.currentTime = d
+  }
+  getTime() {
+    return this.currentTime
+  }
+}
+let clock = new Clock()
+console.log(Object.getOwnPropertyNames(Clock.prototype)) // [ 'constructor', 'setTime' ]
+console.log(Object.getOwnPropertyNames(clock)) // []

@@ -6,7 +6,11 @@
 
 ## 安装与使用
 
-**全局安装 typescript** `npm install -g typescript`
+**全局安装 typescript**
+
+`npm install -g typescript`
+
+**编译**
 
 创建后缀名为 `.ts` 的文件，在该文件夹下，执行 `tsc 文件名`，得到编译后的 js 文件，运行该 js 文件
 
@@ -401,7 +405,7 @@ interface StringArray {
 }
 ```
 
-* 将索引签名设置为只读，可以放在给索引赋值
+* 将索引签名设置为只读，可以防止给索引赋值
 
 ```javascript
 interface StringArray {
@@ -411,3 +415,120 @@ let arr: StringArray
 arr = ['卫庄', '盖聂']
 // arr[2] = "鲨齿" // 报错：数字索引签名只读
 ```
+
+### 类类型
+
+接口也可以用来明确的强制一个类符合某种契约
+
+类实现接口：`implements`
+
+接口定义类的方法：`方法名(参数列表)`
+
+```javascript
+interface ClockInterface {
+  currentTime: Date
+  setTime(d: Date)
+}
+class Clock implements ClockInterface {
+  currentTime: Date
+  setTime(d: Date) {
+    this.currentTime = d
+  }
+  getTime() {
+    return this.currentTime
+  }
+}
+```
+
+> 接口描述了类的公共部分，而不是公共和私有两部分。 它不会帮你检查类是否具有某些私有成员。
+
+## 类
+
+demos：[https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/03-classes.ts](https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/03-classes.ts)
+
+> 注意：typescript 中的类，与 ES6 中类的定义方式不一样，不能想当然的认为两种是一样的写法！！！
+
+```javascript
+class Greeter {
+  greeting: string
+  constructor(msg: string) {
+    this.greeting = msg
+  }
+  greet () {
+    return 'Hello, ' + this.greeting + '!'
+  }
+}
+```
+
+### 继承
+
+派生类：子类；  
+
+基类：超类
+
+派生类的构造函数里**必须调用** `super()`，即基类的构造函数。并且，必须在构造函数里**访问 this 之前**调用 super()。
+
+派生类的构造函数仍然可以省略，会默认调用基类的构造函数。
+
+派生类可以重写基类的方法。
+
+```javascript
+class Animal {
+  name: string
+  constructor(name: string) {
+    this.name = name
+  }
+  move (discInMeters: number = 0) {
+    console.log(`${this.name} moved ${discInMeters}m!`)
+  }
+}
+
+class Cat extends Animal {
+  constructor(name: string) {
+    super(name)
+  }
+  move (discInMeters: number = 5) {
+    console.log('climb~~~')
+    super.move(discInMeters)
+  }
+}
+
+let dage: Animal = new Cat('大哥')
+dage.move(10)
+```
+
+如上面定义变量 dage 的方法，dage 为 Cat 类的实例，但是类型可以是基类 Animal。
+
+### 修饰符 public
+
+public 是默认的修饰符，成员都默认为 public
+
+```javascript
+class Animal {
+  public name: string
+  public constructor(name: string) {
+    this.name = name
+  }
+  public move (discInMeters: number = 0) {
+    console.log(`${this.name} moved ${discInMeters}m!`)
+  }
+}
+```
+
+### 修饰符 private
+
+当成员被标记成 private 时，它就不能在声明它的类的外部访问。
+
+```javascript
+class Animal {
+  private name: string
+  public constructor(name: string) {
+    this.name = name
+  }
+}
+
+let animal = new Animal('白凤')
+console.log(animal.name) // 报错：[ts] Property 'name' is private and only accessible within class 'Animal'.
+```
+
+> 虽然访问 private 成员 typescript 检测会到错误，编译时报错，但是编译出的 javascript 文件仍能正常执行

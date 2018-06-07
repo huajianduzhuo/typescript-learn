@@ -36,3 +36,22 @@ mySearch = function (source, search) {
     let index = source.search(search);
     return index > -1;
 };
+// 函数参数名不需要与接口参数名相匹配，只要类型一致即可
+let mySearch2;
+mySearch2 = function (src, sub) {
+    let index = src.search(sub);
+    return index > -1;
+};
+let arr;
+arr = ['卫庄', '盖聂'];
+class Clock {
+    setTime(d) {
+        this.currentTime = d;
+    }
+    getTime() {
+        return this.currentTime;
+    }
+}
+let clock = new Clock();
+console.log(Object.getOwnPropertyNames(Clock.prototype)); // [ 'constructor', 'setTime' ]
+console.log(Object.getOwnPropertyNames(clock)); // []
