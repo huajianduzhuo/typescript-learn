@@ -55,3 +55,21 @@ class Clock {
 let clock = new Clock();
 console.log(Object.getOwnPropertyNames(Clock.prototype)); // [ 'constructor', 'setTime' ]
 console.log(Object.getOwnPropertyNames(clock)); // []
+let d = {
+    c: '岑岑',
+    a: '灿灿',
+    b: '柒夜'
+};
+function getCounter() {
+    let counter = function (start) {
+        counter.count = start;
+        return `The number is ${counter.count}`;
+    };
+    counter.interval = 1;
+    counter.reset = function () {
+        counter.start = 0;
+    };
+    return counter;
+}
+let counter = getCounter();
+counter(10);

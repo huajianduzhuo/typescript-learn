@@ -444,6 +444,89 @@ class Clock implements ClockInterface {
 
 > 接口描述了类的公共部分，而不是公共和私有两部分。 它不会帮你检查类是否具有某些私有成员。
 
+### 继承接口
+
+- 接口也可以相互继承
+- 一个接口可以继承多个接口
+
+```javascript
+interface int1 {
+  a: string;
+}
+interface int2 {
+  b: string;
+}
+interface int3 extends int1, int2 {
+  c: string;
+}
+let d: int3 = {
+  c: '岑岑',
+  a: '灿灿',
+  b: '柒夜'
+}
+```
+
+### 混合类型
+
+接口可以描述多种类型
+
+比如：一个对象同时作为对象和函数使用
+
+```javascript
+interface Counter {
+  (start: number): string
+  interval: number
+  count: number
+  reset (): void
+}
+function getCounter (): Counter {
+  let counter = <Counter>function(start: number) {
+    counter.count = start
+    return `The number is ${counter.count}`
+  }
+  counter.interval = 1
+  counter.reset = function () {
+    counter.start = 0
+  }
+  return counter
+}
+let counter = getCounter()
+counter(10)
+```
+
+### 接口继承类
+
+当接口继承了一个类类型时，它会继承类的成员但不包括其实现。
+
+接口同样会继承到类的 private 和 protected 成员。这意味着这个接口类型只能被这个类或其子类所实现。
+
+```javascript
+class Control {
+    private state: any;
+}
+
+interface SelectableControl extends Control {
+    select(): void;
+}
+
+class Button extends Control implements SelectableControl {
+    select() { }
+}
+
+class TextBox extends Control {
+    select() { }
+}
+
+// 错误：“Image”类型缺少“state”属性。
+class Image implements SelectableControl {
+    select() { }
+}
+
+class Location {
+
+}
+```
+
 ## 类
 
 demos：[https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/03-classes.ts](https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/03-classes.ts)

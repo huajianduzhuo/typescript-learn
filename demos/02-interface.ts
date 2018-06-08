@@ -113,3 +113,44 @@ class Clock implements ClockInterface {
 let clock = new Clock()
 console.log(Object.getOwnPropertyNames(Clock.prototype)) // [ 'constructor', 'setTime' ]
 console.log(Object.getOwnPropertyNames(clock)) // []
+
+/** 
+ * 接口继承
+ */
+interface int1 {
+  a: string
+}
+interface int2 {
+  b: string
+}
+interface int3 extends int1, int2 {
+  c: string
+}
+let d: int3 = {
+  c: '岑岑',
+  a: '灿灿',
+  b: '柒夜'
+}
+
+/** 
+ * 混合类型
+ */
+interface Counter {
+  (start: number): string
+  interval: number
+  count: number
+  reset (): void
+}
+function getCounter (): Counter {
+  let counter = <Counter>function(start: number) {
+    counter.count = start
+    return `The number is ${counter.count}`
+  }
+  counter.interval = 1
+  counter.reset = function () {
+    counter.start = 0
+  }
+  return counter
+}
+let counter = getCounter()
+counter(10)
