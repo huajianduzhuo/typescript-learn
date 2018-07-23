@@ -840,3 +840,144 @@ interface Point3d extends Point {
 
 let point3d: Point3d = { x: 1, y: 2, z: 3 }
 ```
+
+## 函数
+
+demos：[https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/04-functions.ts](https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/04-functions.ts)
+
+### 函数类型
+
+函数类型包含两部分：参数类型和返回值类型。函数的类型只是由**参数类型和返回值**组成的。
+
+只要参数类型是匹配的，那么就认为它是有效的函数类型，而不在乎参数名是否正确。
+
+对于返回值，我们在函数和返回值类型之前使用( => )符号，使之清晰明了。返回值类型是函数类型的必要部分，如果函数没有返回任何值，你也必须指定返回值类型为 void 而不能留空。
+
+```ts
+let add: (baseValue: number, increment: number) => number = function (x: number, y: number): number {
+  return x + y
+}
+
+let add2 = function (x: number, y: number): number {
+  return x + y
+}
+```
+
+对于 add2 函数，如果你在赋值语句的一边指定了类型但是另一边没有类型的话，TypeScript 编译器会自动识别出类型。
+
+这叫做“按上下文归类”，是类型推论的一种。
+
+### 可选参数和默认参数
+
+TypeScript 里的每个函数参数都是必须的。编译器检查用户是否为每个参数都传入了值。编译器还会假设只有这些参数会被传递进函数。
+
+简短地说，**传递给一个函数的参数个数必须与函数期望的参数个数一致。**
+
+```ts
+function sayName(firstName: string, lastName: string) {
+  return `${firstName} ${lastName}`
+}
+sayName('赵', '云澜', 'd') // 报错：Expected 2 arguments, but got 3.
+sayName('赵', '云澜') // 正常
+sayName('赵') // 报错：Expected 2 arguments, but got 1.
+```
+
+* 可以在参数名旁使用 ? 实现 可选参数 的功能
+```ts
+function sayName2(firstName: string, lastName?: string) {
+  if (lastName) {
+    return `${firstName} ${lastName}`
+  } else {
+    return firstName
+  }
+}
+sayName2('赵', '云澜')
+sayName2('赵')
+sayName2('赵', '云澜', 'd') // 报错：Expected 1-2 arguments, but got 3.
+```
+> 可选参数必须跟在必须参数后面。
+
+* 可以为参数提供一个默认值当用户没有传递这个参数或传递的值是 undefined 时。它们叫做有默认初始化值的参数
+```ts
+function sayName3(firstName: string, lastName = '处长') {
+  return `${firstName} ${lastName}`
+}
+sayName3('赵', '云澜')
+sayName3('赵')
+```
+> 在所有必须参数后面的带默认初始化的参数都是可选的
+> 与普通可选参数不同的是，带默认值的参数不需要放在必须参数的后面。如果带默认值的参数出现在必须参数前面，用户必须明确的传入 undefined 值来获得默认值。
+
+### 剩余参数
+
+当不知道有多少参数会被传递进来时，可以把所有参数收集到一个变量里。
+
+剩余参数会被当做个数不限的可选参数。可以一个都没有，同样也可以有任意个。编译器创建参数数组，名字是你在省略号（...）后面给定的名字，你可以在函数体内使用这个数组。
+
+```ts
+function sayName4(firstName: string, ...restOfNames: string[]): string {
+  return `${firstName} ${restOfNames.join(' ')}`
+}
+sayName4('赵')
+sayName4('赵', '云澜')
+sayName4('赵', '云', '澜')
+```
+
+### this 参数
+
+可以为函数提供一个显式的 this 参数。this 参数是个假的参数，它出现在参数列表的最前面。
+
+当在 tsconfig.json 中配置 `noImplicitThis` 为 true 时，this 表达式的值为 any 类型时，会生成一个错误。提供一个具有类型的 this 参数，告诉 typescript 函数期待在那个对象上调用，就不会报错了。
+
+```ts
+interface Card {
+  suit: string
+  card: number
+}
+function testThis() {
+  console.log(this.card) // 报错：'this' implicitly has type 'any' because it does not have a type annotation.
+}
+function testThis(this: Card) { // 提供 this 参数，就不报错了
+  console.log(this.card)
+}
+```
+
+> 因为 this 是假的参数，编译时不会被编译到参数中，调用时也不用传递
+
+```ts
+function testThis(this: Card, extraParam: string) {
+  console.log(this.card, extraParam)
+}
+```
+
+上面的 typescript 代码编译结果为
+
+```js
+function testThis(extraParam) {
+  console.log(this.card, extraParam)
+}
+```
+
+### 重载
+
+有时候，函数会根据传进来的参数的类型，决定返回类型。
+
+可以通过为一个函数提供多个函数类型定义来进行函数重载。
+
+```ts
+function overloadTest(x: {firstName: string; lastName: string}): string
+function overloadTest(x: string): {firstName: string; lastName: string}
+function overloadTest(x): any {
+  if (typeof x === 'object') {
+    return `${x.firstName} ${x.lastName}`
+  } else if (typeof x === 'string') {
+    return {firstName: x, lastName: '云澜'}
+  }
+}
+console.log(overloadTest('小'))
+```
+
+为了让编译器能够选择正确的检查类型，它与 JavaScript 里的处理流程相似。它查找重载列表，尝试使用第一个重载定义。如果匹配的话就使用这个。因此，在定义重载的时候，一定要把最精确的定义放在最前面。
+
+> function overloadTest(x): any 并不是重载列表的一部分。
+> 以其他方式调用 overloadTest 会报错

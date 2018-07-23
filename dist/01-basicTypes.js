@@ -3,14 +3,14 @@
  * 类型[]
  * Array<类型>
  */
-let list1 = [1, 2, 4, 'fds'];
-let list2 = [4, 6, 8, true];
+var list1 = [1, 2, 4, 'fds'];
+var list2 = [4, 6, 8, true];
 console.log(list1, list2);
 /**
  * 元组 tuple
  * 已知数量和类型的数组
  */
-let t1;
+var t1;
 t1 = ['盖聂', 10, true];
 console.log(t1[0].substring(0));
 t1[1] = 12;
@@ -26,7 +26,7 @@ var Color;
     Color[Color["GREEN"] = 1] = "GREEN";
     Color[Color["BLUE"] = 2] = "BLUE";
 })(Color || (Color = {}));
-let c = Color.GREEN;
+var c = Color.GREEN;
 console.log(c); // 1
 console.log(Color); // { '0': 'RED', '1': 'GREEN', '2': 'BLUE', RED: 0, GREEN: 1, BLUE: 2 }
 // 枚举 enum 指定起始编号
@@ -62,8 +62,8 @@ console.log(Color4); // { '0': 'RED', '5': 'GREEN', '6': 'BLUE', RED: 0, GREEN: 
  *    any 类型不进行类型检查，可以调用任意的方法
  *    Object 类型进行类型检查，不能随意调用方法，即便赋予的值真的有这些方法
  */
-let any1 = '卫庄';
-let obj1 = '盖聂';
+var any1 = '卫庄';
+var obj1 = '盖聂';
 any1.substring(0);
 // obj1.substring(0) // 报错： [ts] Property 'substring' does not exist on type 'Object'.
 /**
@@ -87,7 +87,7 @@ function fun() {
 // let n: null = undefined // strictNullChecks 为 true，会报错
 // let un: number = undefined // strictNullChecks 为 true，会报错
 // let ns: string = null // strictNullChecks 为 true，会报错
-let uv = undefined;
+var uv = undefined;
 /**
  * never
  * 表示的是那些永不存在的值的类型
@@ -118,9 +118,9 @@ create({ name: '卫庄' });
  * 2. 变量 as 类型
  * 在 TypeScript 里使用 JSX 时，只有 as 语法断言是被允许的
  */
-let val1 = '卫庄';
-let len1 = val1.length;
+var val1 = '卫庄';
+var len1 = val1.length;
 console.log(len1);
-let val2 = true;
-let len2 = val2.length;
+var val2 = true;
+var len2 = val2.length;
 console.log(len2); // undefined

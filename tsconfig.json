@@ -2,10 +2,11 @@
   "compileOnSave": true,
   "compilerOptions": {
     "outDir": "dist",
-    "target": "ES6",
+    "target": "ES5",
     "removeComments": false,
     "strictNullChecks": true,
-    "locale": "zh-CN"
+    "locale": "zh-CN",
+    "noImplicitThis": true
   },
   "include": [
     "demos"

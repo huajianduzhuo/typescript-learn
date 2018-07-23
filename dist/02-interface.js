@@ -9,16 +9,16 @@ function printLabel(labeledObj) {
     console.log(labeledObj.label);
     console.log(labeledObj.name);
 }
-const obj2 = {
+var obj2 = {
     name: '盖聂',
     label: '卫聂'
 };
 printLabel(obj2);
-let p1 = { x: 10, y: 20 };
+var p1 = { x: 10, y: 20 };
 //  p1.x = 30 // 报错
 p1.y = 30;
 function createSquare(squareConfig) {
-    let square = { color: 'black', area: 100 };
+    var square = { color: 'black', area: 100 };
     if (squareConfig.color) {
         square.color = squareConfig.color;
     }
@@ -28,42 +28,45 @@ function createSquare(squareConfig) {
     return square;
 }
 // const square = createSquare({yanse: 'lightblue', width: 12} as SquareConfig)
-const squareOption = { yanse: 'lightblue', width: 12 };
-const square = createSquare(squareOption);
+var squareOption = { yanse: 'lightblue', width: 12 };
+var square = createSquare(squareOption);
 console.log(square);
-let mySearch;
+var mySearch;
 mySearch = function (source, search) {
-    let index = source.search(search);
+    var index = source.search(search);
     return index > -1;
 };
 // 函数参数名不需要与接口参数名相匹配，只要类型一致即可
-let mySearch2;
+var mySearch2;
 mySearch2 = function (src, sub) {
-    let index = src.search(sub);
+    var index = src.search(sub);
     return index > -1;
 };
-let arr;
+var arr;
 arr = ['卫庄', '盖聂'];
-class Clock {
-    setTime(d) {
+var Clock = /** @class */ (function () {
+    function Clock() {
+    }
+    Clock.prototype.setTime = function (d) {
         this.currentTime = d;
-    }
-    getTime() {
+    };
+    Clock.prototype.getTime = function () {
         return this.currentTime;
-    }
-}
-let clock = new Clock();
+    };
+    return Clock;
+}());
+var clock = new Clock();
 console.log(Object.getOwnPropertyNames(Clock.prototype)); // [ 'constructor', 'setTime' ]
 console.log(Object.getOwnPropertyNames(clock)); // []
-let d = {
+var d = {
     c: '岑岑',
     a: '灿灿',
     b: '柒夜'
 };
 function getCounter() {
-    let counter = function (start) {
+    var counter = function (start) {
         counter.count = start;
-        return `The number is ${counter.count}`;
+        return "The number is " + counter.count;
     };
     counter.interval = 1;
     counter.reset = function () {
@@ -71,5 +74,5 @@ function getCounter() {
     };
     return counter;
 }
-let counter = getCounter();
+var counter = getCounter();
 counter(10);
