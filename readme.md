@@ -981,3 +981,95 @@ console.log(overloadTest('小'))
 
 > function overloadTest(x): any 并不是重载列表的一部分。
 > 以其他方式调用 overloadTest 会报错
+
+## 泛型
+
+demos：[https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/05-generics.ts](https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/05-generics.ts)
+
+定义一个 identify 函数，会返回任何传入它的值：
+
+```ts
+function identify(x: any): any {
+  return x
+}
+```
+
+如上，第一想法是使用 any 类型。但是使用 any 类型，无法保证传入的参数类型与返回值类型一致。
+
+可以使用**类型变量**，它是一种特殊的变量，只用于表示类型而不是值。
+
+```ts
+function identify<T>(x: T): T {
+  return x
+}
+```
+
+使用泛型函数：
+
+* 传入所有的参数，包含类型参数
+  ```ts
+  let output1 = identify<string>('a')
+  ```
+* 利用**类型推论** -- 即编译器会根据传入的参数自动地帮助我们确定 T 的类型
+  ```ts
+  let output2 = identify('a')
+  ```
+
+### 使用泛型变量
+
+使用泛型创建像 identity 这样的泛型函数时，编译器要求你在函数体必须正确的使用这个通用的类型。换句话说，你必须把这些参数当做是任意或所有类型。
+
+如下使用泛型，会报错：
+```ts
+function identify<T>(x: T): T {
+  console.log(x.length) // 报错：Property 'length' does not exist on type 'T'.
+  return x
+}
+```
+因为 x 可能是不包含 length 属性的类型，如 number 类型。
+
+**我们可以把泛型变量 T 当做类型的一部分使用，而不是整个类型，增加了灵活性。**
+
+```ts
+function identify2<T>(x: T[]): T[] {
+  return x
+}
+```
+
+如上，泛型变量 T 代表的是数组类型的参数 x 中的元素的类型，而不是参数整体的类型。
+
+### 泛型接口
+
+为泛型函数 identify 定义泛型类型的接口
+
+```ts
+interface indentifyFn {
+  <T>(x: T): T;
+}
+let myIdentify: indentifyFn = identify
+```
+
+可以把泛型参数当作整个接口的一个参数
+
+```ts
+interface indentifyFn2<T> {
+  (x: T): T;
+}
+let myIdentify2: indentifyFn2<string> = identify
+```
+
+### 泛型类
+
+```ts
+class genericClass<T> {
+  a: T;
+  static b: T; // 报错：Static members cannot reference class type parameters.
+  add: (x: T, y: T) => T
+}
+let myGenericClass = new genericClass<number>()
+myGenericClass.a = 12
+myGenericClass.add = function(x, y) { return x + y }
+```
+
+类有两部分：静态部分和实例部分。 泛型类指的是**实例部分的类型**，所以**类的静态属性不能使用这个泛型类型**。
+
