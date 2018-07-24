@@ -1073,3 +1073,66 @@ myGenericClass.add = function(x, y) { return x + y }
 
 类有两部分：静态部分和实例部分。 泛型类指的是**实例部分的类型**，所以**类的静态属性不能使用这个泛型类型**。
 
+### 泛型约束
+
+如下，访问 x 的 length 属性，会报错，因为不能证明所有类型都有 length 属性：
+
+```ts
+function identify4<T>(x: T): T {
+  console.log(x.length) // 报错：Property 'length' does not exist on type 'T'.
+  return x
+}
+```
+
+可以定义一个接口为类型参数 T 描述约束条件，并使用 `extends` 关键字来实现约束
+
+```ts
+interface lengthWise {
+  length: number;
+}
+function identify4<T extends lengthWise>(x: T): T {
+  console.log(x.length)
+  return x
+}
+```
+
+### 在泛型约束中使用类型参数
+
+可以声明一个被其他类型参数约束的类型参数
+
+```ts
+function getProperty<T, K extends keyof T>(obj: T, key: K) {
+  return obj[key]
+}
+const obj = {a: 'aaa', b: 'bbb'}
+getProperty(obj, 'a')
+getProperty(obj, 'c') // 报错：[ts] Argument of type '"c"' is not assignable to parameter of type '"a" | "b"'
+```
+
+如上，可以保证参数 key 是 obj 的一个属性
+
+### 在泛型里使用类类型
+
+```ts
+class BeeKeeper {
+  hasMask: boolean
+}
+class ZooKeeper {
+  nametag: string
+}
+class Animals {
+  numLegs: number
+}
+class Bee extends Animals {
+  keeper: BeeKeeper
+}
+class Lion extends Animals {
+  keeper: ZooKeeper
+}
+function createInstance<A extends Animals>(c: new () => A): A {
+  return new c()
+}
+createInstance(Lion).keeper.nametag // typechecks!
+createInstance(Bee).keeper.hasMask // typechecks!
+```
+
