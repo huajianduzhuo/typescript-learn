@@ -1343,7 +1343,7 @@ var enums = [1 /* A */, 2 /* B */]
 declare enum Enum2 {
   A = 1,
   B,
-  C = 2,
+  C = 2
 }
 ```
 
@@ -1351,3 +1351,118 @@ declare enum Enum2 {
 
 > ? 无编译结果，没明白
 
+## 高级类型
+
+demos：[https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/07-advancedTypes.ts](https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/07-advancedTypes.ts)
+
+### 交叉类型（Intersection Types）
+
+交叉类型是将多个类型合并为一个类型。这让我们可以把现有的多种类型叠加到一起成为一种类型，它包含了所需的所有类型的特性。
+
+例如，Person & Serializable & Loggable 同时是 Person 和 Serializable 和 Loggable。就是说这个类型的对象同时拥有了这三种类型的成员。
+
+```ts
+function extend<T, U>(first: T, second: U): T & U {
+  let result = <T & U>{}
+  for (let key in first) {
+    ;(<any>result)[key] = first[key]
+  }
+  for (const key in second) {
+    if (second.hasOwnProperty(key)) {
+      ;(<any>result)[key] = second[key]
+    }
+  }
+  return result
+}
+```
+
+### 联合类型（Union Types）
+
+联合类型表示一个值可以是几种类型之一。
+
+我们用竖线（ | ）分隔每个类型，所以 number | string | boolean 表示一个值可以是 number，string，或 boolean。
+
+```ts
+function padLeft(value: string, padding: string | number) {
+  if (typeof padding === 'number') {
+    return Array(padding + 1).join(" ") + value
+  } else {
+    return padding + value
+  }
+}
+```
+
+如果一个值是联合类型，我们只能访问此联合类型的所有类型里共有的成员。
+
+```ts
+interface Bird {
+  fly();
+  layEggs();
+}
+interface Fish {
+  swim();
+  layEggs();
+}
+function getPet(): Bird | Fish {
+  return <Bird | Fish>{}
+}
+let pet = getPet()
+pet.layEggs()
+// pet.fly() // 报错：Property 'fly' does not exist on type 'Bird | Fish'. Property 'fly' does not exist on type 'Fish'.
+```
+
+### 类型保护与区分类型
+
+上一节的代码中，访问 `pet.fly` 报错。为了能够访问联合类型中不属于共有成员的其他成员，可以使用类型断言：
+
+```ts
+if ((<Bird>pet).fly) {
+  (<Bird>pet).fly()
+} else {
+  (<Fish>pet).swim()
+}
+```
+
+#### 用户自定义的类型保护
+
+上面的代码中多次使用了类型断言。
+
+typescript 的 **类型保护机制** 可以让我们一旦检查过 pet 的类型，就能在之后的每个分支里知道 pet 的类型。
+
+类型保护就是一些表达式，它们会在运行时检查以确保在某个作用域里的类型。
+
+要定义一个类型保护，我们只要简单地定义一个函数，它的返回值是一个 **类型谓词**。
+
+谓词为 `parameterName is Type` 这种形式， parameterName 必须是来自于当前函数签名里的一个参数名。
+
+```ts
+function isFish(pet: Bird | Fish): pet is Fish {
+  return (<Fish>pet).swim !== undefined
+}
+
+if (isFish(pet)) {
+  pet.swim()
+} else {
+  pet.fly()
+}
+```
+
+> 注意：TypeScript 不仅知道在 if 分支里 pet 是 Fish 类型；它还清楚在 else 分支里，一定不是 Fish 类型，一定是 Bird 类型。
+
+#### typeof 类型保护
+
+对于原始类型，不需要定义一个函数来进行类型保护。可以直接使用 `typeof x === 'number'`，因为 typescript 可以将他识别为一个类型保护。
+
+这些 **typeof 类型保护** 只有两种形式能被识别：`typeof v === "typename"` 和 `typeof v !== "typename"`，"typename" 必须是   **number，string，boolean 或 symbol**。但是 TypeScript 并不会阻止你与其它字符串比较，语言不会把那些表达式识别为类型保护。
+
+```ts
+function padLeft2(value: string, padding: string | number) {
+  if (typeof padding === 'number') {
+    padding.toFixed(2)
+    return Array(padding + 1).join(" ") + value
+  } else {
+    padding.charAt(1)
+    return padding + value
+  }
+}
+```
