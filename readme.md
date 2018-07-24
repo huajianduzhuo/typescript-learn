@@ -854,11 +854,14 @@ demos：[https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/04-
 对于返回值，我们在函数和返回值类型之前使用( => )符号，使之清晰明了。返回值类型是函数类型的必要部分，如果函数没有返回任何值，你也必须指定返回值类型为 void 而不能留空。
 
 ```ts
-let add: (baseValue: number, increment: number) => number = function (x: number, y: number): number {
+let add: (baseValue: number, increment: number) => number = function(
+  x: number,
+  y: number
+): number {
   return x + y
 }
 
-let add2 = function (x: number, y: number): number {
+let add2 = function(x: number, y: number): number {
   return x + y
 }
 ```
@@ -882,7 +885,8 @@ sayName('赵', '云澜') // 正常
 sayName('赵') // 报错：Expected 2 arguments, but got 1.
 ```
 
-* 可以在参数名旁使用 ? 实现 可选参数 的功能
+- 可以在参数名旁使用 ? 实现 可选参数 的功能
+
 ```ts
 function sayName2(firstName: string, lastName?: string) {
   if (lastName) {
@@ -895,9 +899,11 @@ sayName2('赵', '云澜')
 sayName2('赵')
 sayName2('赵', '云澜', 'd') // 报错：Expected 1-2 arguments, but got 3.
 ```
+
 > 可选参数必须跟在必须参数后面。
 
-* 可以为参数提供一个默认值当用户没有传递这个参数或传递的值是 undefined 时。它们叫做有默认初始化值的参数
+- 可以为参数提供一个默认值当用户没有传递这个参数或传递的值是 undefined 时。它们叫做有默认初始化值的参数
+
 ```ts
 function sayName3(firstName: string, lastName = '处长') {
   return `${firstName} ${lastName}`
@@ -905,6 +911,7 @@ function sayName3(firstName: string, lastName = '处长') {
 sayName3('赵', '云澜')
 sayName3('赵')
 ```
+
 > 在所有必须参数后面的带默认初始化的参数都是可选的
 > 与普通可选参数不同的是，带默认值的参数不需要放在必须参数的后面。如果带默认值的参数出现在必须参数前面，用户必须明确的传入 undefined 值来获得默认值。
 
@@ -937,7 +944,8 @@ interface Card {
 function testThis() {
   console.log(this.card) // 报错：'this' implicitly has type 'any' because it does not have a type annotation.
 }
-function testThis(this: Card) { // 提供 this 参数，就不报错了
+function testThis(this: Card) {
+  // 提供 this 参数，就不报错了
   console.log(this.card)
 }
 ```
@@ -965,13 +973,13 @@ function testThis(extraParam) {
 可以通过为一个函数提供多个函数类型定义来进行函数重载。
 
 ```ts
-function overloadTest(x: {firstName: string; lastName: string}): string
-function overloadTest(x: string): {firstName: string; lastName: string}
+function overloadTest(x: { firstName: string; lastName: string }): string
+function overloadTest(x: string): { firstName: string; lastName: string }
 function overloadTest(x): any {
   if (typeof x === 'object') {
     return `${x.firstName} ${x.lastName}`
   } else if (typeof x === 'string') {
-    return {firstName: x, lastName: '云澜'}
+    return { firstName: x, lastName: '云澜' }
   }
 }
 console.log(overloadTest('小'))
@@ -1006,11 +1014,11 @@ function identify<T>(x: T): T {
 
 使用泛型函数：
 
-* 传入所有的参数，包含类型参数
+- 传入所有的参数，包含类型参数
   ```ts
   let output1 = identify<string>('a')
   ```
-* 利用**类型推论** -- 即编译器会根据传入的参数自动地帮助我们确定 T 的类型
+- 利用**类型推论** -- 即编译器会根据传入的参数自动地帮助我们确定 T 的类型
   ```ts
   let output2 = identify('a')
   ```
@@ -1020,12 +1028,14 @@ function identify<T>(x: T): T {
 使用泛型创建像 identity 这样的泛型函数时，编译器要求你在函数体必须正确的使用这个通用的类型。换句话说，你必须把这些参数当做是任意或所有类型。
 
 如下使用泛型，会报错：
+
 ```ts
 function identify<T>(x: T): T {
   console.log(x.length) // 报错：Property 'length' does not exist on type 'T'.
   return x
 }
 ```
+
 因为 x 可能是不包含 length 属性的类型，如 number 类型。
 
 **我们可以把泛型变量 T 当做类型的一部分使用，而不是整个类型，增加了灵活性。**
@@ -1044,7 +1054,7 @@ function identify2<T>(x: T[]): T[] {
 
 ```ts
 interface indentifyFn {
-  <T>(x: T): T;
+  <T>(x: T): T
 }
 let myIdentify: indentifyFn = identify
 ```
@@ -1053,7 +1063,7 @@ let myIdentify: indentifyFn = identify
 
 ```ts
 interface indentifyFn2<T> {
-  (x: T): T;
+  (x: T): T
 }
 let myIdentify2: indentifyFn2<string> = identify
 ```
@@ -1062,13 +1072,15 @@ let myIdentify2: indentifyFn2<string> = identify
 
 ```ts
 class genericClass<T> {
-  a: T;
-  static b: T; // 报错：Static members cannot reference class type parameters.
+  a: T
+  static b: T // 报错：Static members cannot reference class type parameters.
   add: (x: T, y: T) => T
 }
 let myGenericClass = new genericClass<number>()
 myGenericClass.a = 12
-myGenericClass.add = function(x, y) { return x + y }
+myGenericClass.add = function(x, y) {
+  return x + y
+}
 ```
 
 类有两部分：静态部分和实例部分。 泛型类指的是**实例部分的类型**，所以**类的静态属性不能使用这个泛型类型**。
@@ -1088,7 +1100,7 @@ function identify4<T>(x: T): T {
 
 ```ts
 interface lengthWise {
-  length: number;
+  length: number
 }
 function identify4<T extends lengthWise>(x: T): T {
   console.log(x.length)
@@ -1104,7 +1116,7 @@ function identify4<T extends lengthWise>(x: T): T {
 function getProperty<T, K extends keyof T>(obj: T, key: K) {
   return obj[key]
 }
-const obj = {a: 'aaa', b: 'bbb'}
+const obj = { a: 'aaa', b: 'bbb' }
 getProperty(obj, 'a')
 getProperty(obj, 'c') // 报错：[ts] Argument of type '"c"' is not assignable to parameter of type '"a" | "b"'
 ```
@@ -1135,4 +1147,207 @@ function createInstance<A extends Animals>(c: new () => A): A {
 createInstance(Lion).keeper.nametag // typechecks!
 createInstance(Bee).keeper.hasMask // typechecks!
 ```
+
+## 枚举
+
+demos：[https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/06-enums.ts](https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/06-enums.ts)
+
+使用枚举我们可以定义一些带名字的常量。使用枚举可以清晰地表达意图或创建一组有区别的用例。TypeScript 支持数字的和基于字符串的枚举。
+
+### 数字枚举
+
+```ts
+enum Direction {
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT
+}
+console.log(Direction.DOWN) // 1
+```
+
+如上，定义一个数字枚举。UP 的值默认为 0，其余的成员会从 0 开始自动增长。即 UP 为 0，DOWN 为 1，LEFT 为 2，RIGHT 为 3.
+
+我们也可以指定数字的初始值：
+
+```ts
+enum Direction {
+  UP = 1,
+  DOWN,
+  LEFT,
+  RIGHT
+}
+console.log(Direction.DOWN) // 2
+```
+
+这样，UP 的值为 1，其余成员从 1 开始自动增长。
+
+### 字符串枚举
+
+```ts
+enum ABO {
+  A = 'alpha',
+  B = 'beta',
+  O = 'omega'
+}
+```
+
+### 异构枚举（Heterogeneous enums）
+
+从技术的角度来说，枚举可以混合字符串和数字成员
+
+除非你真的想要利用 JavaScript 运行时的行为，否则我们不建议这样做。
+
+```ts
+enum HeterogeneousEnums {
+  N = 0,
+  Y = 'yes'
+}
+```
+
+### 计算的和常量成员
+
+每个枚举成员都带有一个值，它可以是 **常量** 或 **计算出来的**。
+
+当满足如下条件时，枚举成员被当作是**常量**：
+
+- 它是枚举的第一个成员且没有初始化器，这种情况下它被赋予值 **0**
+  ```ts
+  enum E {
+    X
+  }
+  ```
+- 它不带有初始化器且它之前的枚举成员是一个 数字常量。这种情况下，当前枚举成员的值为它上一个枚举成员的值加 1
+
+  ```ts
+  enum E {
+    X,
+    Y
+  }
+
+  enum E {
+    X = 2,
+    Y
+  }
+  ```
+
+- 枚举成员使用 **常量枚举表达式** 初始化。常数枚举表达式是 TypeScript 表达式的子集，它可以在编译阶段求值。当一个表达式满足下面条件之一时，它就是一个常量枚举表达式：
+  - 一个枚举表达式字面量（主要是字符串字面量或数字字面量）
+  - 一个对之前定义的常量枚举成员的引用（可以是在不同的枚举类型中定义的）
+  - 带括号的常量枚举表达式
+  - 一元运算符 +, -, ~ 其中之一应用在了常量枚举表达式
+  - 常量枚举表达式做为二元运算符 +, -, \*, /, %, <<, >>, >>>, &, |, ^ 的操作对象。若常数枚举表达式求值后为 NaN 或 Infinity，则会在编译阶段报错。
+
+所有其它情况的枚举成员被当作是需要计算得出的值
+
+```ts
+enum FileAccess {
+  // constant members
+  None,
+  Read = 1 << 1,
+  Write = 1 << 2,
+  ReadWrite = Read | Write,
+  // computed member
+  G = '123'.length
+}
+```
+
+### 反向映射
+
+数字枚举成员具有 **反向映射**
+
+下面的代码：
+
+```ts
+enum Direction {
+  UP = 1,
+  DOWN,
+  LEFT,
+  RIGHT
+}
+```
+
+会被编译为：
+
+```ts
+var Direction
+;(function(Direction) {
+  Direction[(Direction['UP'] = 1)] = 'UP'
+  Direction[(Direction['DOWN'] = 2)] = 'DOWN'
+  Direction[(Direction['LEFT'] = 3)] = 'LEFT'
+  Direction[(Direction['RIGHT'] = 4)] = 'RIGHT'
+})(Direction || (Direction = {}))
+```
+
+生成的代码中，枚举类型被编译成一个对象，它包含了正向映射（ name -> value）和反向映射（ value -> name）。
+
+> 不会为字符串枚举成员生成反向映射
+
+### const 枚举
+
+常量枚举通过在枚举上使用 `const` 修饰符来定义。
+
+```ts
+const enum Enum {
+  A = 1,
+  B = A * 2
+}
+```
+
+常量枚举只能使用常量枚举表达式，常量枚举不允许包含计算成员。
+
+不同于常规的枚举，常量枚举在编译时会被删除。常量枚举成员在使用的地方会被内联进来。
+
+**常规枚举：**
+
+```ts
+enum Enum {
+  A = 1,
+  B = A * 2
+}
+let enums = [Enum.A, Enum.B]
+```
+
+编译结果为
+
+```ts
+var Enum
+;(function(Enum) {
+  Enum[(Enum['A'] = 1)] = 'A'
+  Enum[(Enum['B'] = 2)] = 'B'
+})(Enum || (Enum = {}))
+var enums = [Enum.A, Enum.B]
+```
+
+**常量枚举：**
+
+```ts
+const enum Enum {
+  A = 1,
+  B = A * 2
+}
+let enums = [Enum.A, Enum.B]
+```
+
+编译结果为
+
+```ts
+var enums = [1 /* A */, 2 /* B */]
+```
+
+### 外部枚举
+
+外部枚举用来描述已经存在的枚举类型的形状。
+
+```ts
+declare enum Enum2 {
+  A = 1,
+  B,
+  C = 2,
+}
+```
+
+外部枚举和非外部枚举之间有一个重要的区别，在正常的枚举里，没有初始化方法的成员被当成常数成员。 对于非常数的外部枚举而言，没有初始化方法时被当做需要经过计算的。
+
+> ? 无编译结果，没明白
 
