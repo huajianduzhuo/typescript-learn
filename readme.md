@@ -1385,7 +1385,7 @@ function extend<T, U>(first: T, second: U): T & U {
 ```ts
 function padLeft(value: string, padding: string | number) {
   if (typeof padding === 'number') {
-    return Array(padding + 1).join(" ") + value
+    return Array(padding + 1).join(' ') + value
   } else {
     return padding + value
   }
@@ -1396,12 +1396,12 @@ function padLeft(value: string, padding: string | number) {
 
 ```ts
 interface Bird {
-  fly();
-  layEggs();
+  fly()
+  layEggs()
 }
 interface Fish {
-  swim();
-  layEggs();
+  swim()
+  layEggs()
 }
 function getPet(): Bird | Fish {
   return <Bird | Fish>{}
@@ -1417,9 +1417,9 @@ pet.layEggs()
 
 ```ts
 if ((<Bird>pet).fly) {
-  (<Bird>pet).fly()
+  ;(<Bird>pet).fly()
 } else {
-  (<Fish>pet).swim()
+  ;(<Fish>pet).swim()
 }
 ```
 
@@ -1453,16 +1453,201 @@ if (isFish(pet)) {
 
 对于原始类型，不需要定义一个函数来进行类型保护。可以直接使用 `typeof x === 'number'`，因为 typescript 可以将他识别为一个类型保护。
 
-这些 **typeof 类型保护** 只有两种形式能被识别：`typeof v === "typename"` 和 `typeof v !== "typename"`，"typename" 必须是   **number，string，boolean 或 symbol**。但是 TypeScript 并不会阻止你与其它字符串比较，语言不会把那些表达式识别为类型保护。
+这些 **typeof 类型保护** 只有两种形式能被识别：`typeof v === "typename"` 和 `typeof v !== "typename"`，"typename" 必须是 **number，string，boolean 或 symbol**。但是 TypeScript 并不会阻止你与其它字符串比较，语言不会把那些表达式识别为类型保护。
 
 ```ts
 function padLeft2(value: string, padding: string | number) {
   if (typeof padding === 'number') {
     padding.toFixed(2)
-    return Array(padding + 1).join(" ") + value
+    return Array(padding + 1).join(' ') + value
   } else {
     padding.charAt(1)
     return padding + value
   }
 }
 ```
+
+#### instanceof 类型保护
+
+`instanceof` 类型保护是通过构造函数来细化类型的一种方式。
+
+```ts
+interface Padder {
+  getPaddingStr(): string
+}
+class SpaceRepeatingPadder implements Padder {
+  constructor(public spaceNum: number) {}
+  getPaddingStr(): string {
+    return Array(this.spaceNum + 1).join(' ')
+  }
+}
+class StringPadder implements Padder {
+  constructor(public value: string) {}
+  getPaddingStr(): string {
+    return this.value
+  }
+}
+function getRandomPadder(): Padder {
+  return Math.random() < 0.5
+    ? new SpaceRepeatingPadder(4)
+    : new StringPadder('  ')
+}
+let padder: Padder = getRandomPadder()
+if (padder instanceof SpaceRepeatingPadder) {
+  // padder.value // 报错：Property 'value' does not exist on type 'SpaceRepeatingPadder'.
+  console.log(padder.spaceNum)
+}
+if (padder instanceof StringPadder) {
+  // padder.spaceNum // 报错：[ts] Property 'spaceNum' does not exist on type 'StringPadder'.
+  console.log(padder.value)
+}
+```
+
+instanceof 的右侧要求是一个构造函数，TypeScript 将细化为：
+
+- 此构造函数的 prototype 属性的类型，如果它的类型不为 any 的话
+- 构造签名所返回的类型的联合
+  以此顺序。
+
+### 可以为 null 的类型
+
+TypeScript 具有两种特殊的类型， null 和 undefined，它们分别具有值 null 和 undefined.
+
+默认情况下，类型检查器认为 null 与 undefined 可以赋值给任何类型。
+
+--strictNullChecks 标记可以解决此错误：当你声明一个变量时，它不会自动地包含 null 或 undefined。
+
+> 注意，按照 JavaScript 的语义，TypeScript 会把 null 和 undefined 区别对待。 string | null， string | undefined 和 string | undefined | null 是不同的类型。
+
+```ts
+let s = 'abc'
+// s = undefined // 报错：Type 'undefined' is not assignable to type 'string'
+// s = null // 报错：Type 'null' is not assignable to type 'string'
+```
+
+#### 可选参数和可选属性
+
+使用了 `--strictNullChecks`，可选参数会被自动地加上 `| undefined`:
+
+```ts
+function f(a: number, b?: number): number {
+  return a + (b || 0)
+}
+f(1, 3)
+f(1, undefined)
+// f(1, null) // 报错：Argument of type 'null' is not assignable to parameter of type 'number | undefined'.
+```
+
+可选属性也会有同样的处理：
+
+```ts
+class C {
+  constructor(public a: number, public b?: number) {}
+}
+let cc = new C(1, undefined)
+let cc2 = new C(1, 4)
+// let cc3 = new C(1, null) // 报错：Argument of type 'null' is not assignable to parameter of type 'number | undefined'.
+```
+
+#### 类型保护和类型断言
+
+当一个变量的类型为联合类型，并且包含 null 时，使用这个变量时需要使用类型保护来去除 null。
+
+可以使用 if 语句
+
+```ts
+function fn(str: string | null) {
+  if (str === null) {
+    return 'default'
+  } else {
+    return str
+  }
+}
+```
+
+也可以用 || 短路运算符
+
+```ts
+function fn(str: string | null) {
+  return str || 'default'
+}
+```
+
+如果编译器不能够去除 null 或 undefined，你可以使用类型断言手动去除。 语法是添加 `!` 后缀： `identifier!` 从 identifier 的类型里去除了 null 和 undefined：
+
+```ts
+function fn(str: string | null) {
+  return str!.charAt(0)
+}
+```
+
+### 类型别名
+
+类型别名会给一个类型起个新名字。类型别名有时和接口很像，但是可以作用于原始值，联合类型，元组以及其它任何你需要手写的类型。
+
+起别名**不会新建一个类型** - 它创建了一个新名字来引用那个类型。
+
+```ts
+type s = string | number
+// let sss: s = true // 报错：[ts] Type 'true' is not assignable to type 'string | number'
+```
+
+给原始类型起别名通常没什么用，尽管可以做为文档的一种形式使用。
+
+同接口一样，**类型别名也可以是泛型** - 我们可以添加类型参数并在别名声明的右侧传入：
+
+```ts
+type GenericType<T> = (c: T) => T
+```
+
+#### 接口 vs 类型别名
+
+类型别名像接口一样，但是仍有细微差别
+
+* 接口创建了一个新的名字，可以在其它任何地方使用。类型别名并不创建新名字 — 比如，错误信息就不会使用别名。
+* 类型别名不能被 extends 和 implements（自己也不能 extends 和 implements 其它类型）。 
+
+> 如果你无法通过接口来描述一个类型并且需要使用联合类型或元组类型，这时通常会使用类型别名。
+
+### 字符串字面量类型
+
+字符串字面量类型允许你 **指定字符串必须的固定值**。
+
+在实际应用中，字符串字面量类型可以与联合类型，类型保护和类型别名很好的配合。通过结合使用这些特性，你可以实现类似枚举类型的字符串。
+
+```ts
+type Easing = 'ease-in' | 'ease-out' | 'ease-in-out'
+function translate(easing: Easing) {
+  if (easing === 'ease-in') {
+  } else if (easing === 'ease-out') {
+  } else {
+  }
+}
+translate('ease-in-out')
+// translate('linear') // 报错：[ts] Argument of type '"linear"' is not assignable to parameter of type 'Easing'.
+```
+
+**字符串字面量类型还可以用于区分函数重载：**
+
+```ts
+function createElement(tagname: 'INPUT'): HTMLInputElement
+function createElement(tagname: 'IMG'): HTMLImageElement
+function createElement(tagname: string): Element {
+  return document.createElement(tagname)
+}
+```
+
+### 数字字面量类型
+
+```ts
+type Num = 1 | 2
+let nn: Num = 2
+```
+
+### 枚举成员类型
+
+如我们在 枚举一节里提到的，当每个枚举成员都是用字面量初始化的时候枚举成员是具有类型的。
+
+在我们谈及“单例类型”的时候，多数是指枚举成员类型和数字/字符串字面量类型，尽管大多数用户会互换使用“单例类型”和“字面量类型”。
+
+### 可辨识联合（Discriminated Unions）
