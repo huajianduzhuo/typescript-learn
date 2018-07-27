@@ -1793,8 +1793,8 @@ function pluck(o, names) {
 
 在 TypeScript 里使用此函数，通过 **索引类型查询** 和 **索引访问操作符**：
 
-* 索引类型查询操作符：`keyof T`。对于任何类型 `T`，`keyof T` 的结果为 T 上已知的公共属性名的联合。
-* 索引访问操作符：`T[K]`。
+- 索引类型查询操作符：`keyof T`。对于任何类型 `T`，`keyof T` 的结果为 T 上已知的公共属性名的联合。
+- 索引访问操作符：`T[K]`。
 
 ```ts
 function pluck<T, K extends keyof T>(o: T, names: K[]): T[K][] {
@@ -1804,7 +1804,7 @@ let pers = {
   name: '赵云澜',
   age: 26
 }
-pluck(pers, ['name', 'age']) 
+pluck(pers, ['name', 'age'])
 // pluck(pers, ['name', 'ds']) // 报错：Argument of type '("name" | "ds")[]' is not assignable to parameter of type '("name" | "age")[]'
 ```
 
@@ -1814,5 +1814,84 @@ pluck(pers, ['name', 'age'])
 
 TODO
 
+## 模块
 
+demos：[https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/08-modules.ts](https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/08-modules.ts)
 
+模块在其自身的作用域里执行，而不是在全局作用域里。
+
+模块是自声明的；两个模块之间的关系是通过在文件级别上使用 `imports` 和 `exports` 建立的。
+
+模块使用**模块加载器**去导入其它的模块。在运行时，模块加载器的作用是在执行此模块代码前去查找并执行这个模块的所有依赖。大家最熟知的 JavaScript 模块加载器是服务于 Node.js 的 `CommonJS` 和服务于 Web 应用的 `Require.js`。
+
+TypeScript 与 ECMAScript 2015 一样，任何包含顶级 import 或者 export 的文件都被当成一个模块。相反地，如果一个文件不带有顶级的 import 或者 export 声明，那么它的内容被视为全局可见的（因此对模块也是可见的）。
+
+### 导出
+
+#### 导出声明
+
+任何声明（比如变量，函数，类，类型别名或接口）都能够通过添加 `export` 关键字来导出。
+
+```ts
+export interface StringValidator {
+  isAcceptable(s: string): boolean;
+}
+export const MobileReg = /^[0-9]{11}$/
+```
+
+#### 导出语句
+
+```ts
+class MobileValidator implements StringValidator {
+  isAcceptable(s: string): boolean {
+    return MobileReg.test(s)
+  }
+}
+
+export {MobileValidator}
+export {MobileValidator as MainValidator}
+```
+
+#### 重新导出
+
+有时候我们会把导入的模块的部分重新导出。重新导出功能并不会在当前模块导入那个模块或定义一个新的局部变量。
+
+```ts
+export * from './MobileValidator'
+```
+
+### 导入
+
+#### 导入一个模块中的某个导出内容
+
+```ts
+import {StringValidator} from './Validation'
+```
+
+可以对导入内容重命名：
+
+```ts
+import {StringValidator as SV} from './Validation'
+```
+
+#### 将整个模块导入到一个变量
+
+```ts
+import * as Validation from './Validation'
+
+export class MobileValidator implements Validation.StringValidator {
+  isAcceptable(s: string): boolean {
+    return MobileReg.test(s)
+  }
+}
+```
+
+#### 具有副作用的导入模块
+
+尽管不推荐这么做，一些模块会设置一些全局状态供其它模块使用。这些模块可能没有任何的导出或用户根本就不关注它的导出。使用下面的方法来导入这类模块：
+
+```ts
+import "./my-module.js"
+```
+
+### 默认导出
