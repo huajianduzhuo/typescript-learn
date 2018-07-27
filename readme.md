@@ -1604,8 +1604,8 @@ type GenericType<T> = (c: T) => T
 
 类型别名像接口一样，但是仍有细微差别
 
-* 接口创建了一个新的名字，可以在其它任何地方使用。类型别名并不创建新名字 — 比如，错误信息就不会使用别名。
-* 类型别名不能被 extends 和 implements（自己也不能 extends 和 implements 其它类型）。 
+- 接口创建了一个新的名字，可以在其它任何地方使用。类型别名并不创建新名字 — 比如，错误信息就不会使用别名。
+- 类型别名不能被 extends 和 implements（自己也不能 extends 和 implements 其它类型）。
 
 > 如果你无法通过接口来描述一个类型并且需要使用联合类型或元组类型，这时通常会使用类型别名。
 
@@ -1648,6 +1648,171 @@ let nn: Num = 2
 
 如我们在 枚举一节里提到的，当每个枚举成员都是用字面量初始化的时候枚举成员是具有类型的。
 
-在我们谈及“单例类型”的时候，多数是指枚举成员类型和数字/字符串字面量类型，尽管大多数用户会互换使用“单例类型”和“字面量类型”。
+在我们谈及“ **单例类型** ”的时候，多数是指**枚举成员类型和数字/字符串字面量类型**，尽管大多数用户会**互换使用“单例类型”和“字面量类型”**。
 
 ### 可辨识联合（Discriminated Unions）
+
+你可以合并单例类型，联合类型，类型保护和类型别名来创建一个叫做 **可辨识联合** 的高级模式，它也称做 **标签联合** 或 **代数数据类型**。
+
+可辨识联合在函数式编程很有用处。一些语言会自动地为你辨识联合；而 TypeScript 则基于已有的 JavaScript 模式。
+
+它具有 3 个要素：
+
+- 具有共同的单例类型属性 — 可辨识的特征。
+- 一个类型别名包含了那些类型的联合 — 联合。
+- 共同属性上的类型保护。
+
+```ts
+interface Square {
+  kind: 'square'
+  size: number
+}
+interface RectAngle {
+  kind: 'rectangle'
+  width: number
+  height: number
+}
+interface Circle {
+  kind: 'circle'
+  radius: number
+}
+```
+
+首先我们声明了将要联合的接口。每个接口都有 kind 属性但有不同的字符串字面量类型。kind 属性称做 **可辨识的特征** 或 **标签**。其它的属性则特定于各个接口。注意，目前各个接口间是没有联系的。下面我们把它们联合到一起：
+
+```ts
+type Shape = Square | RectAngle | Circle
+```
+
+现在我们使用可辨识联合:
+
+```ts
+function area(s: Shape): number {
+  switch (s.kind) {
+    case 'square':
+      return s.size * s.size
+    case 'rectangle':
+      return s.width * s.height
+    case 'circle':
+      return Math.PI * s.radius ** 2
+  }
+}
+```
+
+### 完整性检查
+
+当没有涵盖所有可辨识联合的变化时，我们想让编译器可以通知我们。比如，如果我们添加了 Triangle 到 Shape，我们希望编译器可以提醒我们 area 函数应该涵盖这一情况。
+
+一种方法是开启 `strictNullChecks`，并**指定返回值类型**：
+
+```ts
+type Shape = Square | RectAngle | Circle | Triangle
+
+function area(s: Shape): number {
+  // 报错：Function lacks ending return statement and return type does not include 'undefined'.
+  switch (s.kind) {
+    case 'square':
+      return s.size * s.size
+    case 'rectangle':
+      return s.width * s.height
+    case 'circle':
+      return Math.PI * s.radius ** 2
+  }
+}
+```
+
+因为 area 函数没有包含所有情况，所以编译器认为可能返回 undefined，指定返回 number 类型便会报错。
+
+第二种方法使用 `never` 类型，编译器用它来进行完整性检查：
+
+```ts
+function assertNever(n): never {
+  throw new Error('Unexpected object: ' + n)
+}
+function area(s: Shape): number {
+  switch (s.kind) {
+    case 'square':
+      return s.size * s.size
+    case 'rectangle':
+      return s.width * s.height
+    case 'circle':
+      return Math.PI * s.radius ** 2
+    default:
+      return assertNever(s)
+  }
+}
+```
+
+### 多态的 this 类型
+
+多态的 this 类型表示的是**某个包含类或接口的 子类型**。 这被称做 **F-bounded 多态性**。它能很容易的表现连贯接口间的继承。
+
+```ts
+class BasicCalculator {
+  public constructor(protected value: number = 0) {}
+  public currentValue(): number {
+    return this.value
+  }
+  public add(operand: number): this {
+    this.value += operand
+    return this
+  }
+  public multiply(operand: number): this {
+    this.value *= operand
+    return this
+  }
+}
+class ScientificCalculator extends BasicCalculator {
+  public constructor(value: number) {
+    super(value)
+  }
+  public sin(): this {
+    this.value = Math.sin(this.value)
+    return this
+  }
+}
+
+let v = new ScientificCalculator(2)
+  .add(3)
+  .multiply(6)
+  .sin()
+  .currentValue()
+```
+
+### 索引类型（Index types）
+
+使用索引类型，编译器就能够检查使用了动态属性名的代码。
+
+一个常见的 JavaScript 模式是从对象中选取属性的子集：
+
+```ts
+function pluck(o, names) {
+  return names.map(n => o[n])
+}
+```
+
+在 TypeScript 里使用此函数，通过 **索引类型查询** 和 **索引访问操作符**：
+
+* 索引类型查询操作符：`keyof T`。对于任何类型 `T`，`keyof T` 的结果为 T 上已知的公共属性名的联合。
+* 索引访问操作符：`T[K]`。
+
+```ts
+function pluck<T, K extends keyof T>(o: T, names: K[]): T[K][] {
+  return names.map(n => o[n])
+}
+let pers = {
+  name: '赵云澜',
+  age: 26
+}
+pluck(pers, ['name', 'age']) 
+// pluck(pers, ['name', 'ds']) // 报错：Argument of type '("name" | "ds")[]' is not assignable to parameter of type '("name" | "age")[]'
+```
+
+### 映射类型
+
+没明白作用
+
+TODO
+
+
+

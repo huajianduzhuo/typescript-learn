@@ -1,3 +1,13 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /**
  * 交叉类型
  * 使用 &
@@ -10,10 +20,12 @@
 function extend(first, second) {
     var result = {};
     for (var key in first) {
+        ;
         result[key] = first[key];
     }
     for (var key in second) {
         if (second.hasOwnProperty(key)) {
+            ;
             result[key] = second[key];
         }
     }
@@ -28,7 +40,7 @@ function extend(first, second) {
  */
 function padLeft(value, padding) {
     if (typeof padding === 'number') {
-        return Array(padding + 1).join(" ") + value;
+        return Array(padding + 1).join(' ') + value;
     }
     else {
         return padding + value;
@@ -41,9 +53,11 @@ var pet = getPet();
 pet.layEggs();
 // pet.fly() // 报错：Property 'fly' does not exist on type 'Bird | Fish'. Property 'fly' does not exist on type 'Fish'.
 if (pet.fly) {
+    ;
     pet.fly();
 }
 else {
+    ;
     pet.swim();
 }
 /**
@@ -69,7 +83,7 @@ else {
 function padLeft2(value, padding) {
     if (typeof padding === 'number') {
         padding.toFixed(2);
-        return Array(padding + 1).join(" ") + value;
+        return Array(padding + 1).join(' ') + value;
     }
     else {
         padding.charAt(1);
@@ -95,7 +109,9 @@ var StringPadder = /** @class */ (function () {
     return StringPadder;
 }());
 function getRandomPadder() {
-    return Math.random() < 0.5 ? new SpaceRepeatingPadder(4) : new StringPadder('  ');
+    return Math.random() < 0.5
+        ? new SpaceRepeatingPadder(4)
+        : new StringPadder('  ');
 }
 var padder = getRandomPadder();
 if (padder instanceof SpaceRepeatingPadder) {
@@ -159,3 +175,86 @@ function createElement(tagname) {
     return document.createElement(tagname);
 }
 var nn = 2;
+/**
+ * 完整性检查
+ */
+/* function area(s: Shape): number { // 报错：Function lacks ending return statement and return type does not include 'undefined'.
+  switch (s.kind) {
+    case 'square':
+      return s.size * s.size
+    case 'rectangle':
+      return s.width * s.height
+    case 'circle':
+      return Math.PI * s.radius ** 2
+  }
+} */
+function assertNever(n) {
+    throw new Error('Unexpected object: ' + n);
+}
+function area(s) {
+    switch (s.kind) {
+        case 'square':
+            return s.size * s.size;
+        case 'rectangle':
+            return s.width * s.height;
+        case 'circle':
+            return Math.PI * Math.pow(s.radius, 2);
+        default:
+            return assertNever(s);
+    }
+}
+/**
+ * this 类型
+ * @class BasicCalculator
+ */
+var BasicCalculator = /** @class */ (function () {
+    function BasicCalculator(value) {
+        if (value === void 0) { value = 0; }
+        this.value = value;
+    }
+    BasicCalculator.prototype.currentValue = function () {
+        return this.value;
+    };
+    BasicCalculator.prototype.add = function (operand) {
+        this.value += operand;
+        return this;
+    };
+    BasicCalculator.prototype.multiply = function (operand) {
+        this.value *= operand;
+        return this;
+    };
+    return BasicCalculator;
+}());
+var ScientificCalculator = /** @class */ (function (_super) {
+    __extends(ScientificCalculator, _super);
+    function ScientificCalculator(value) {
+        return _super.call(this, value) || this;
+    }
+    ScientificCalculator.prototype.sin = function () {
+        this.value = Math.sin(this.value);
+        return this;
+    };
+    return ScientificCalculator;
+}(BasicCalculator));
+var v = new ScientificCalculator(2)
+    .add(3)
+    .multiply(6)
+    .sin()
+    .currentValue();
+/**
+ * 索引类型
+ * @template T
+ * @template K： T 上已知的公共属性名的联合
+ * @param {T} o
+ * @param {K[]} names
+ * @returns {T[K][]}
+ */
+function pluck(o, names) {
+    return names.map(function (n) { return o[n]; });
+}
+var pers = {
+    name: '赵云澜',
+    age: 26
+};
+pluck(pers, ['name', 'age']);
+// pluck(pers, ['name', 'ds']) // 报错：Argument of type '("name" | "ds")[]' is not assignable to parameter of type '("name" | "age")[]'
