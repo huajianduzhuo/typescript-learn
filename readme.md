@@ -1834,7 +1834,7 @@ TypeScript 与 ECMAScript 2015 一样，任何包含顶级 import 或者 export 
 
 ```ts
 export interface StringValidator {
-  isAcceptable(s: string): boolean;
+  isAcceptable(s: string): boolean
 }
 export const MobileReg = /^[0-9]{11}$/
 ```
@@ -1848,8 +1848,8 @@ class MobileValidator implements StringValidator {
   }
 }
 
-export {MobileValidator}
-export {MobileValidator as MainValidator}
+export { MobileValidator }
+export { MobileValidator as MainValidator }
 ```
 
 #### 重新导出
@@ -1865,13 +1865,13 @@ export * from './MobileValidator'
 #### 导入一个模块中的某个导出内容
 
 ```ts
-import {StringValidator} from './Validation'
+import { StringValidator } from './Validation'
 ```
 
 可以对导入内容重命名：
 
 ```ts
-import {StringValidator as SV} from './Validation'
+import { StringValidator as SV } from './Validation'
 ```
 
 #### 将整个模块导入到一个变量
@@ -1891,7 +1891,157 @@ export class MobileValidator implements Validation.StringValidator {
 尽管不推荐这么做，一些模块会设置一些全局状态供其它模块使用。这些模块可能没有任何的导出或用户根本就不关注它的导出。使用下面的方法来导入这类模块：
 
 ```ts
-import "./my-module.js"
+import './my-module.js'
 ```
 
 ### 默认导出
+
+每个模块都可以有且**只能有一个** `default` 导出。
+
+### export = 和 import = require()
+
+CommonJS 和 AMD 都有一个 exports 对象的概念，它包含了一个模块的所有导出内容。
+
+TypeScript 模块支持 `export =` 语法以支持传统的 CommonJS 和 AMD 的工作流模型。
+
+`export =` 语法定义一个模块的导出对象。它可以是类，接口，命名空间，函数或枚举。
+
+若要导入一个使用了`export =`的模块时，必须使用 TypeScript 提供的特定语法`import module = require("module")`。
+
+ZipCodeValidator.ts
+
+```ts
+import { StringValidator } from './Validation'
+
+const zipCodeReg = /^[0-9]{6}$/
+
+class ZipCodeValidator implements StringValidator {
+  isAcceptable(s: string): boolean {
+    return zipCodeReg.test(s)
+  }
+}
+
+export = ZipCodeValidator
+```
+
+test.ts
+
+```ts
+import ZipCodeValidator = require('./ZipCodeValidator')
+
+let zipCodeValidator = new ZipCodeValidator()
+```
+
+### 使用其他的 javascript 库
+
+要想描述非 TypeScript 编写的类库的类型，我们需要声明类库所暴露出的 API。
+
+我们叫它声明因为它不是“外部程序”的具体实现。它们通常是在 `.d.ts` 文件里定义的。
+
+#### 外部模块
+
+我们可以使用顶级的 export 声明来为每个模块都定义一个 `.d.ts` 文件，但最好还是写在一个大的 `.d.ts` 文件里。我们使用与构造一个外部命名空间相似的方法，但是这里使用 `module` 关键字并且把名字用引号括起来，方便之后 import。
+
+node.d.ts
+
+```ts
+declare module 'path' {
+  export function normalize(p: string): string
+  export function join(...paths: any[]): string
+}
+
+declare module 'axios' {
+  export interface AxiosProxyConfig {
+    host: string
+    port: number
+  }
+}
+```
+
+现在我们可以 `/// <reference> node.d.ts` 并且使用 `import module = require("module");` 或 `import * as module from "module"` 加载模块。
+
+```ts
+/// <reference path="node.d.ts" />
+import * as path from 'path'
+
+path.join('./', 'Validation.ts')
+```
+
+如上，声明了 `.d.ts` 文件后，import 的 path 依赖，会指向 `node.d.ts` 文件，且不能调用未在 `node.d.ts` 文件中导出的方法。
+
+#### 外部模块简写
+
+假如你不想在使用一个新模块之前花时间去编写声明，你可以采用声明的简写形式以便能够快速使用它。
+
+**简写模块里所有导出的类型将是 any。**
+
+node.d.ts
+
+```ts
+declare module 'axios'
+```
+
+使用
+
+```ts
+/// <reference path="node.d.ts" />
+import axios from 'axios'
+
+axios.get('/api', data => {})
+```
+
+#### 模块声明通配符
+
+某些模块加载器如 SystemJS 和 AMD 支持导入非 JavaScript 内容。 它们通常会使用一个前缀或后缀来表示特殊的加载语法。模块声明通配符可以用来表示这些情况。
+
+```ts
+declare module '*!text' {
+  const content: string
+  export default content
+}
+// Some do it the other way around.
+declare module 'json!*' {
+  const value: any
+  export default value
+}
+```
+
+现在你可以就导入匹配"_!text"或"json!_"的内容了。
+
+```ts
+import fileContent from './xyz.txt!text'
+import data from 'json!http://example.com/data.json'
+```
+
+### 创建模块结构指导
+
+**导出**
+
+- 尽可能的在顶层导出
+  用户应该更容易地使用你模块导出的内容。 嵌套层次过多会变得难以处理，因此仔细考虑一下如何组织你的代码。
+- 如果仅导出单个 class 或 function，使用 export default
+- 如果要导出多个对象，把它们放在顶层里导出
+  ```ts
+  export class SomeType {
+    /* ... */
+  }
+  export function someFunc() {
+    /* ... */
+  }
+  ```
+
+**导入**
+
+- 明确地列出导入的名字
+- 使用命名空间导入模式当你要导出大量内容的时候
+- 使用重新导出进行扩展
+
+- 模块里不要使用命名空间
+
+**危险信号**
+
+以下均为模块结构上的危险信号。重新检查以确保你没有在对模块使用命名空间：
+
+- 文件的顶层声明是 export namespace Foo { ... } （删除 Foo 并把所有内容向上层移动一层）
+- 文件只有一个 export class 或 export function （考虑使用 export default）
+- 多个文件的顶层具有同样的 export namespace Foo { （不要以为这些会合并到一个 Foo 中！）

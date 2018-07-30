@@ -1,0 +1,23 @@
+{
+  "name": "typescript-learn",
+  "version": "1.0.0",
+  "description": "当前学习版本为 `Typescript 2.7`",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/huajianduzhuo/typescript-learn.git"
+  },
+  "author": "yujing",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/huajianduzhuo/typescript-learn/issues"
+  },
+  "homepage": "https://github.com/huajianduzhuo/typescript-learn#readme",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "path": "^0.12.7"
+  }
+}

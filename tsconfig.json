@@ -6,7 +6,8 @@
     "removeComments": false,
     "strictNullChecks": true,
     "locale": "zh-CN",
-    "noImplicitThis": true
+    "noImplicitThis": true,
+    "module": "commonjs"
   },
   "include": [
     "demos"
