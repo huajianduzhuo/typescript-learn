@@ -2045,3 +2045,78 @@ import data from 'json!http://example.com/data.json'
 - 文件的顶层声明是 export namespace Foo { ... } （删除 Foo 并把所有内容向上层移动一层）
 - 文件只有一个 export class 或 export function （考虑使用 export default）
 - 多个文件的顶层具有同样的 export namespace Foo { （不要以为这些会合并到一个 Foo 中！）
+
+## 命名空间
+
+demos：[https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/09-namespaces.ts](https://github.com/huajianduzhuo/typescript-learn/blob/master/demos/09-namespaces.ts)
+
+使用 `namespace` 定义命名空间，命名空间内可提供给外部访问的内容用 `export` 导出。
+
+```ts
+namespace Validation {
+  export interface StringValidator {
+    isAcceptable(s: string): boolean;
+  }
+  
+  let letterRegexp = /^[A-Za-z]+$/
+  let numberRegexp = /^[0-9]+$/
+  
+  export class LettersOnlyValidator implements StringValidator {
+    isAcceptable(s: string): boolean {
+      return letterRegexp.test(s)
+    }
+  }
+  
+  export class ZipCodeValidator implements StringValidator {
+    isAcceptable(s: string): boolean {
+      return s.length === 5 && numberRegexp.test(s)
+    }
+  }
+}
+
+let strings = ['Hello', '10000', '123']
+
+let validators: {[s: string]: Validation.StringValidator;} = {}
+validators['Letters Only'] = new Validation.LettersOnlyValidator()
+validators['Zip Code'] = new Validation.ZipCodeValidator()
+
+for (const s of strings) {
+  for (const name in validators) {
+    const isMatch = validators[name].isAcceptable(s)
+    console.log(`${s} ${isMatch ? 'matches' : 'does not match'} ${name}`)
+  }
+}
+```
+
+### 分离到多文件
+
+当应用变得越来越大时，我们需要将代码分离到不同的文件中以便于维护。
+
+多个文件可以是**同一个命名空间**，在使用时就**如同他们在一个文件中定义的一样**。
+
+因为不同文件之间存在依赖关系，所以我们加入了引用标签来告诉编译器文件之间的关联。
+
+demos 查看 `/demos/namespaces/..`
+
+将所有的输入文件编译为一个输出文件，需要使用 `--outFile` 标记。编译器会根据源码里的引用标签自动地对输出进行排序。
+
+`tsc --outFile dist/namespaces/sample.js demos/namespaces/Test.ts`
+
+### 别名
+
+另一种简化命名空间操作的方法是使用`import q = x.y.z`给常用的对象起一个短的名字。不要与用来加载模块的`import x = require('name')`语法弄混了，这里的语法是为指定的符号创建一个别名。你可以用这种方法为任意标识符创建别名，也包括导入的模块中的对象。
+
+```ts
+namespace Shapes {
+  export namespace Polygons {
+    export class Triggle {}
+    export class Square {}
+  }
+}
+
+import Polygons = Shapes.Polygons
+let tri = new Polygons.Triggle()
+```
+
+注意，我们并没有使用`require`关键字，而是直接使用导入符号的限定名赋值。这与使用 var 相似，但它还适用于类型和导入的具有命名空间含义的符号。重要的是，对于值来讲，`import`会生成与原始符号不同的引用，所以改变别名的 var 值并不会影响原始变量的值。
+
