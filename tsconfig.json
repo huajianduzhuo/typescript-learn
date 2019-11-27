@@ -1,15 +1,16 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    "outDir": "dist",
-    "target": "ES5",
+    "outDir": "src-dist",
+    "target": "ES6",
+    "experimentalDecorators": true,
     "removeComments": false,
     "strictNullChecks": true,
     "locale": "zh-CN",
     "noImplicitThis": true,
-    "module": "commonjs"
+    "module": "es2015"
   },
   "include": [
-    "demos"
+    "src"
   ]
 }
